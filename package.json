@@ -1,0 +1,22 @@
+{
+  "name": "twitchbot",
+  "version": "1.0.0",
+  "description": "a twitch chat bot using node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ovallner/TwitchBot.git"
+  },
+  "author": "Oscar Vallner",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ovallner/TwitchBot/issues"
+  },
+  "homepage": "https://github.com/ovallner/TwitchBot#readme",
+  "dependencies": {
+    "node-irc": "0.0.4"
+  }
+}
