@@ -32,8 +32,8 @@ async function resetLights() {
 }
 /*********** callbacks ************/
 
-const api = new HueApi(hueHost, hueUser);
-api.config().then(displayResult).done();
+//const api = new HueApi(hueHost, hueUser);
+//api.config().then(displayResult).done();
 
 const lfm = new LastfmAPI({
 	'api_key' : lastFMKey,
@@ -67,6 +67,39 @@ client.on('CHANMSG', data => {
                 .then(resetLights)
                 .done();
         }
+        else if(command === "song"){
+            lfm.user.getRecentTracks({
+                'limit':1,
+                'user': "maellic",
+                'api_key': lastFMKey,
+                'format':'json'
+            }, function (err, result) {
+                if (err) { return console.log('We\'re in trouble', err); }
+                track = result['track'][0]
+                if (result['track'].length == 2) {
+                    if (track['@attr']['nowplaying'] === 'true') {
+                        client.say(channel, 'Currently playing "' + track['name'] + '" by ' + track['artist']['#text']);
+                    }
+                }
+                else {
+                    listen_date = result['track'][0]['date']['uts'];
+                    curr_date = Math.round(new Date().getTime() / 1000);
+                    delta = curr_date-listen_date;
+                    // If less than an hour has passed
+                    if (delta < 3600) {
+                        client.say(channel, 'Listened to "' + track['name'] + '" by ' + track['artist']['#text'] + ' ' + Math.round(delta/60) + " minutes ago");
+                    }
+                    // If less than a day has passed
+                    else if (delta < 86400) {
+                        client.say(channel, 'Listened to "' + track['name'] + '" by ' + track['artist']['#text'] + ' ' + Math.round(delta/3600) + " hour(s) ago");
+                    }
+                    else {
+                        client.say(channel, 'Listened to "' + track['name'] + '" by ' + track['artist']['#text'] + ' ' + Math.round(delta/86400) + " day(s) ago");
+                    }
+                }
+
+            });
+        }
         else {
             try {
                 colorHSL = convert.keyword.hsl(command);
@@ -80,18 +113,9 @@ client.on('CHANMSG', data => {
                 console.log(err.message);
             }
         }
-        /*
-        if(command === "music"){
-            lfm.user.getRecentTracks(
-                limit=1,
-                user= "maellic",
-                api_key= lastFMKey
-            ).then(displayResult)
-            .done();
-            //console.log(tracks);
-            console.log("music!");
-        }
-        */
+        
+        
+        
     }
 });
 
@@ -104,11 +128,6 @@ client.on('PRIVMSG', function (data) {
 client.on('JOIN', function (data) {
     console.log("SOMEONE HAS JOINED!");
     console.log(data);
-    state = lightState.create().on().shortAlert()
-    api.setGroupLightState(7, state)
-        .then(displayResult)
-        .then(resetLights)
-        .done();
 });
 
 client.connect();
