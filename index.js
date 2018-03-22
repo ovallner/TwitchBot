@@ -5,15 +5,8 @@ const hue = require('node-hue-api'),
       lightState = hue.lightState;
 const ircClient = require('node-irc');
 const LastfmAPI = require('lastfmapi');
-const colors = {
-    "red": 0,
-    "green": 120,
-    "blue": 240,
-    "purple": 300,
-    "yellow": 60,
-    "orange": 30,
-    "cyan": 180
-};
+const convert = require('color-convert');
+
 
 /*********** callbacks ************/
 function sleep(ms) {
@@ -60,13 +53,6 @@ client.on('CHANMSG', data => {
     if(data.message[0] === "!"){
         let command = data.message.slice(1);
 
-        // Checks if the command is to change a color
-        if(command in colors) {
-            state = lightState.create().on().hsb(colors[command], 100, 100);
-            api.setGroupLightState(7, state)
-                .then(displayResult)
-                .done();
-        }
         if(command === "rainbow"){
             state = lightState.create().on().effectColorLoop()
             api.setGroupLightState(7, state)
@@ -80,6 +66,19 @@ client.on('CHANMSG', data => {
                 .then(displayResult)
                 .then(resetLights)
                 .done();
+        }
+        else {
+            try {
+                colorHSL = convert.keyword.hsl(command);
+                state = lightState.create().on().hsl(colorHSL[0], colorHSL[1], colorHSL[2]);
+                api.setGroupLightState(7, state)
+                    .then(displayResult)
+                    .then(resetLights)
+                    .done();
+            }
+            catch(err) {
+                console.log(err.message);
+            }
         }
         /*
         if(command === "music"){
