@@ -6,6 +6,7 @@ const hue = require('node-hue-api'),
 const ircClient = require('node-irc');
 const LastfmAPI = require('lastfmapi');
 const convert = require('color-convert');
+const https = require('https');
 
 
 /*********** callbacks ************/
@@ -39,6 +40,25 @@ const lfm = new LastfmAPI({
 	'api_key' : lastFMKey,
 	'secret' : lastFMSecret
 });
+
+function getViewers() {
+    https.get('https://tmi.twitch.tv/group/user/maellic/chatters', (resp) => {
+        console.log("Attempting to get");
+            let data = ''
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });
+        resp.on('end', () => {
+            //console.log(data)
+            //console.log(JSON.parse(data));
+            viewers = JSON.parse(data)['chatters']["viewers"];
+            console.log(viewers);
+        });
+    }).on("error", (err) => {
+        console.log("Error: " + err.message);
+    });
+}
+
 
 
 const client = new ircClient(server, port, myNick, myNick, password);
@@ -128,7 +148,10 @@ client.on('PRIVMSG', function (data) {
 client.on('JOIN', function (data) {
     console.log("SOMEONE HAS JOINED!");
     console.log(data);
+    
+    //client.say()
 });
 
 client.connect();
 
+getViewers();
